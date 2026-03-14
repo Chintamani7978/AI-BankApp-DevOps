@@ -1,0 +1,121 @@
+name: AI Bank DevSecOps Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - docker
+      - ai
+
+jobs:
+
+  code-scan:
+    name: Code Scan (Maven Build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build Application
+        run: |
+          chmod +x mvnw
+          ./mvnw clean verify
+
+  secrets-scan:
+    name: Secrets Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    needs: code-scan
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+
+  dependency-scan:
+    name: Dependency Scan (Trivy FS)
+    runs-on: ubuntu-latest
+    needs: secrets-scan
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy File Scan
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          scan-type: fs
+          severity: CRITICAL,HIGH
+          exit-code: 1
+
+  docker-build:
+    name: Docker Build & Push
+    runs-on: ubuntu-latest
+    needs: dependency-scan
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ vars.DOCKERHUB_USER }}/ai-bankapp:latest
+            ${{ vars.DOCKERHUB_USER }}/ai-bankapp:${{ github.sha }}
+
+  container-scan:
+    name: Container Image Scan
+    runs-on: ubuntu-latest
+    needs: docker-build
+
+    steps:
+      - name: Scan Docker Image
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: ${{ vars.DOCKERHUB_USER }}/ai-bankapp:latest
+          severity: CRITICAL,HIGH
+          exit-code: 1
+
+  deploy:
+    name: Deploy to AWS EC2
+    runs-on: ubuntu-latest
+    needs: container-scan
+
+    steps:
+      - name: Deploy Application via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+            docker pull ${{ vars.DOCKERHUB_USER }}/ai-bankapp:latest
+
+            docker stop ai-bankapp || true
+            docker rm ai-bankapp || true
+
+            docker run -d \
+              -p 8080:8080 \
+              --name ai-bankapp \
+              ${{ vars.DOCKERHUB_USER }}/ai-bankapp:latest
