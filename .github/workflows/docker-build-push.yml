@@ -1,10 +1,33 @@
 name: Docker Build & Push
 
 on:
-  workflow_call:
+  push:
+    branches:
+      - main
+      - docker
+      - ai
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Grant execute permissions to mvnw
+        run: chmod +x ./mvnw
+
+      - name: Build JAR with Maven
+        run: ./mvnw clean package -DskipTests
+
   build-and-push:
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
