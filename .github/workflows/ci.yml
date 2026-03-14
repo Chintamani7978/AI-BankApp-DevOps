@@ -1,0 +1,24 @@
+name: Basic CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+
+  ci-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Show Files
+        run: |
+          echo "CI Pipeline Started"
+          pwd
+          ls -la
