@@ -1,0 +1,35 @@
+name: Build Spring Boot App
+
+on:
+  push:
+    branches:
+      - main
+      - docker
+      - ai
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build with Maven
+        run: |
+          ./mvnw clean package -DskipTests
+
+      - name: Upload JAR Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bankapp-jar
+          path: target/*.jar
