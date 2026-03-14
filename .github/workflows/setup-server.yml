@@ -25,7 +25,9 @@ jobs:
             if [ ! -d "ai-bank-setup" ]; then
               git clone https://github.com/${{ github.repository }} ai-bank-setup
             else
-              cd ai-bank-setup && git pull
+              cd ai-bank-setup
+              git fetch origin main
+              git reset --hard origin/main
             fi
 
             cd ai-bank-setup
