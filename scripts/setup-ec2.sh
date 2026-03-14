@@ -59,4 +59,32 @@ docker --version
 echo "Docker Compose version:"
 docker-compose --version
 
-echo "Server setup completed successfully!"
+echo "================================"
+echo "Starting AI BankApp with MySQL..."
+echo "================================"
+
+# Export Docker Hub username
+export DOCKERHUB_USER=${DOCKERHUB_USER:-chintamani7978}
+
+# Start services with docker-compose
+cd ~/ai-bank-setup
+docker-compose pull
+docker-compose up -d
+
+echo "================================"
+echo "Waiting for services to start..."
+echo "================================"
+sleep 10
+
+# Check if services are running
+echo "Checking service health..."
+docker-compose ps
+
+echo ""
+echo "================================"
+echo "✅ Server setup completed!"
+echo "================================"
+echo "Application URL: http://$(hostname -I | awk '{print $1}'):8080"
+echo "Health Check: http://$(hostname -I | awk '{print $1}'):8080/actuator/health"
+echo "MySQL: Host=$(hostname -I | awk '{print $1}'), Port=3306"
+echo "================================"

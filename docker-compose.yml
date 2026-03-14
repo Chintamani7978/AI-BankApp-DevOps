@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: ai-bankapp-db
+    environment:
+      MYSQL_ROOT_PASSWORD: Test@123
+      MYSQL_DATABASE: bankappdb
+      MYSQL_USER: bankapp
+      MYSQL_PASSWORD: Test@123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-bankapp-network
+
+  app:
+    image: ${DOCKERHUB_USER:-chintamani7978}/ai-bankapp:latest
+    container_name: ai-bankapp
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: bankappdb
+      MYSQL_USER: bankapp
+      MYSQL_PASSWORD: Test@123
+    ports:
+      - "8080:8080"
+    networks:
+      - ai-bankapp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  ai-bankapp-network:
+    driver: bridge
