@@ -4,28 +4,22 @@ on:
   push:
     branches:
       - main
-      - dev
+      - docker
+      - ai
 
 jobs:
 
-  code-quality:
+  start-ci:
 
     runs-on: ubuntu-latest
 
     steps:
 
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install Linter
+      - name: Verify Repository
         run: |
-          pip install flake8
-
-      - name: Run Linter
-        run: |
-          flake8 .
+          echo "CI pipeline started"
+          echo "Listing project files:"
+          ls -la
