@@ -1,7 +1,11 @@
 name: Container Image Scan
 
 on:
-  workflow_call:
+  push:
+    branches:
+      - main
+      - docker
+      - ai
 
 jobs:
 
@@ -18,3 +22,4 @@ jobs:
           format: table
           severity: CRITICAL,HIGH
           exit-code: 1
+          trivyignores: .trivyignore
