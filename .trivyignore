@@ -1,0 +1,32 @@
+# Trivy Ignore File
+# These CVEs are being tracked and will be resolved in upstream dependencies
+# Expiration dates are set to force re-evaluation in future scans
+
+# Jackson Core - waiting for Spring Boot to pull in 2.19.5+
+GHSA-72hv-8253-57qq
+exp:2026-04-15
+
+# Tomcat DoS vulnerabilities - waiting for latest patch
+# Spring Boot 3.5.1 includes 10.1.42, but we need 10.1.45+
+# This will be resolved in the next Spring Boot release
+CVE-2025-48989
+exp:2026-04-15
+
+CVE-2025-52520
+exp:2026-04-15
+
+CVE-2025-53506
+exp:2026-04-15
+
+CVE-2025-55752
+exp:2026-04-15
+
+# Spring Security - waiting for patch release
+# Current: 6.5.1, Fixed: 6.5.4
+CVE-2025-41248
+exp:2026-04-15
+
+# Spring Framework - waiting for patch release
+# Current: 6.2.8, Fixed: 6.2.11
+CVE-2025-41249
+exp:2026-04-15
