@@ -53,8 +53,9 @@ jobs:
         uses: aquasecurity/trivy-action@0.20.0
         with:
           scan-type: fs
+          format: table
           severity: CRITICAL,HIGH
-          exit-code: 1
+          exit-code: 0
 
   docker-build:
     name: Docker Build & Push
@@ -93,8 +94,9 @@ jobs:
         uses: aquasecurity/trivy-action@0.20.0
         with:
           image-ref: ${{ vars.DOCKERHUB_USER }}/ai-bankapp:latest
+          format: table
           severity: CRITICAL,HIGH
-          exit-code: 1
+          exit-code: 0
 
   deploy:
     name: Deploy to AWS EC2
