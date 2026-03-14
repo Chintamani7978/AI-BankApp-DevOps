@@ -1,0 +1,27 @@
+name: Dependency Vulnerability Scan
+
+on:
+  push:
+    branches:
+      - main
+      - docker
+      - ai
+
+jobs:
+
+  trivy-scan:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy Dependency Scan
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          scan-type: fs
+          format: table
+          severity: CRITICAL,HIGH
+          exit-code: 1
